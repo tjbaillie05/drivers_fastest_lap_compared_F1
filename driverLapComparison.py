@@ -14,12 +14,15 @@ driver1 = sys.argv[3]
 colormap = mpl.cm.plasma
 driver2 = sys.argv[4]
 lapNum = 1 #first lap of the race is lap 1, not lap 0 (that would be the formation lap then)
+maxLaps = 1 
 fig = None
 
 #Loading the session and selecting the desired data
 session = ff1.get_session(year, wknd, ses)
 weekend = session.event
 session.load()
+maxLaps = int(session.laps["LapNumber"].max())
+print(maxLaps, "laps in this session")
 
 def getDriverLap(session, driver):
     if ses == "R":
@@ -29,8 +32,6 @@ def getDriverLap(session, driver):
     x = lap.telemetry['X']              # values for x-axis
     y = lap.telemetry['Y']              # values for y-axis
     speed = lap.telemetry['Speed']      # value to base color gradient on
-
-
 
     brake = lap.telemetry['Brake']
     points = np.array([x, y]).T.reshape(-1, 1, 2)
@@ -60,9 +61,6 @@ def getSpeedAndBrakeDifference(speed1, speed2, x1, y1, x2, y2, brake1, brake2):
     speed_diff = np.zeros_like(speed2)
     brake_diff = np.zeros_like(speed2)
     y2List = y2.tolist()
-    x1List = x1.tolist()
-    y1List = y1.tolist()
-    x2List = x2.tolist()
     brake1List = brake1.tolist()
     brake2List = brake2.tolist()
     speed2List = speed2.tolist()
@@ -83,6 +81,14 @@ def on_key_press(event):
     if ses == "R":
         if event.key == "right":
             lapNum += 1
+            if lapNum > maxLaps:
+                lapNum = maxLaps
+            print("updating for lap:", lapNum)
+            update_lap_data(session, driver1, driver2, fig)
+        elif event.key == "left":
+            lapNum -= 1
+            if lapNum < 1:
+                lapNum = 1
             print("updating for lap:", lapNum)
             update_lap_data(session, driver1, driver2, fig)
 
